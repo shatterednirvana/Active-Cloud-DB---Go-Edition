@@ -1,21 +1,27 @@
 package hello
 
 import (
+	"appengine"
+	"appengine/datastore"
 	"fmt"
 	"http"
-	"template"
+	"json"
 )
+
+type Entity struct {
+	Value string
+}
 
 func init() {
 	http.HandleFunc("/", root)
-	http.HandleFunc("/get", sign)
+	http.HandleFunc("/get", get)
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, guestbookForm)
+	fmt.Fprint(w, mainPage)
 }
 
-const guestbookForm = `
+const mainPage = `
 <html>
   <head>
     <title>Active Cloud DB - Now with 100% more Go!</title>
@@ -28,21 +34,29 @@ const guestbookForm = `
 </html>
 `
 
-func sign(w http.ResponseWriter, r *http.Request) {
-	err := signTemplate.Execute(w, r.FormValue("content"))
-	if err != nil {
-		http.Error(w, err.String(), http.StatusInternalServerError)
+func get(w http.ResponseWriter, r *http.Request) {
+	keyName := r.FormValue("key")
+
+	c := appengine.NewContext(r)
+
+	key := datastore.NewKey("Entity", keyName, 0, nil)
+	entity := new(Entity)
+
+	result := map[string] string {
+		keyName:"",
 	}
+
+	if err := datastore.Get(c, key, entity); err == nil {
+		result[keyName] = entity.Value
+	} else {
+		result[keyName] = fmt.Sprintf("%s", err)
+	}
+
+	jsonResult, err := json.Marshal(result)
+
+	if err != nil {
+		fmt.Printf("json marshalling saw error: %s\n", err)
+	}
+
+	fmt.Fprintf(w, "%s", jsonResult)
 }
-
-var signTemplate = template.MustParse(signTemplateHTML, nil)
-
-const signTemplateHTML = `
-<html>
-  <body>
-    <p>You wrote:</p>
-    <pre>{@|html}</pre>
-  </body>
-</html>
-`
-
