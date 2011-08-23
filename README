@@ -1,0 +1,16 @@
+Active Cloud DB - Go Edition!
+
+Active Cloud DB provides a REST interface to the Google App Engine Datastore
+API. That means that you can write a client that uses good old REST and
+automatically get access to anything that talks Datastore, whether it be
+Google App Engine and its scalable platform or AppScale and the plethora
+of different databases it supports.
+
+A Python version of this already exists, so this project is really more of an
+experiment to learn Go better and get some experience with Bootstrap. Enjoy!
+
+Go - http://golang.org
+Bootstrap - http://twitter.github.com/bootstrap/
+
+Chris Bunch
+http://www.byzantinereality.com
