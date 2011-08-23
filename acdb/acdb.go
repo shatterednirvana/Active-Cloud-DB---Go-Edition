@@ -15,6 +15,9 @@ type Entity struct {
 func init() {
 	http.HandleFunc("/", root)
 	http.HandleFunc("/get", get)
+	http.HandleFunc("/put", put)
+	http.HandleFunc("/query", query)
+	http.HandleFunc("/delete", delete)
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
@@ -44,19 +47,80 @@ func get(w http.ResponseWriter, r *http.Request) {
 
 	result := map[string] string {
 		keyName:"",
+		"error":"",
 	}
 
 	if err := datastore.Get(c, key, entity); err == nil {
 		result[keyName] = entity.Value
 	} else {
-		result[keyName] = fmt.Sprintf("%s", err)
+		result["error"] = fmt.Sprintf("%s", err)
 	}
 
-	jsonResult, err := json.Marshal(result)
+	fmt.Fprintf(w, "%s", mapToJson(result))
+}
 
-	if err != nil {
-		fmt.Printf("json marshalling saw error: %s\n", err)
+func put(w http.ResponseWriter, r *http.Request) {
+	keyName := r.FormValue("key")
+	value := r.FormValue("val")
+
+	c := appengine.NewContext(r)
+
+	key := datastore.NewKey("Entity", keyName, 0, nil)
+	entity := new(Entity)
+	entity.Value = value
+
+	result := map[string] string {
+		"error":"",
+	}
+	if _, err := datastore.Put(c, key, entity); err != nil {
+		result["error"] = fmt.Sprintf("%s", err)
 	}
 
-	fmt.Fprintf(w, "%s", jsonResult)
+	fmt.Fprintf(w, "%s", mapToJson(result))
+}
+
+func query(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	q := datastore.NewQuery("Entity")
+
+	result := map[string] string {}
+	for t := q.Run(c); ; {
+		var entity Entity
+		key, err := t.Next(&entity)
+		if err == datastore.Done {
+			break
+		}
+		if err != nil {
+			result["error"] = fmt.Sprintf("%s", err)
+		}
+		keyString := fmt.Sprintf("%s", key)
+		result[keyString] = entity.Value
+	}
+
+	fmt.Fprintf(w, "%s", mapToJson(result))
+}
+
+func delete(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+
+	keyName := r.FormValue("key")
+	key := datastore.NewKey("Entity", keyName, 0, nil)
+
+	result := map[string] string {
+		"error":"",
+	}
+	if err := datastore.Delete(c, key); err != nil {
+		result["error"] = fmt.Sprintf("%s", err)
+	}
+
+	fmt.Fprintf(w, "%s", mapToJson(result))
+}
+
+func mapToJson(mapToConvert map[string] string) []byte {
+	jsonResult, err := json.Marshal(mapToConvert)
+        if err != nil {
+                fmt.Printf("json marshalling saw error: %s\n", err)
+        }
+
+	return jsonResult
 }
