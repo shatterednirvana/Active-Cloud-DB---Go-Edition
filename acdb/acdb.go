@@ -28,9 +28,10 @@ const mainPage = `
 <html>
   <head>
     <title>Active Cloud DB - Now with 100% more Go!</title>
-    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-1.1.0.min.css">
-    <link rel="javascript" href="/static/js/jquery.min.js">
-    <link rel="javascript" href="/static/js/custom.js">
+    <link rel="stylesheet" href="/static/css/bootstrap-1.1.0.min.css">
+    <script src="static/js/jquery.js" type="text/javascript"></script>
+    <script src="static/js/jquery.tablesorter.min.js" type="text/javascript"></script>
+    <script src="static/js/custom.js" type="text/javascript"></script>
   </head>
   <body>
     <div class="container-fluid">
@@ -45,24 +46,18 @@ const mainPage = `
           <input class="medium" id="val" name="mInput" size="15" type="text" /> 
           <br />
           <br />
-          <button type="submit" class="btn primary">Save Changes</button>
+          <a href="#" id="put" class="put btn primary">Save Changes</a>
           &nbsp;
           <button type="reset" class="btn">Clear</button> 
         </form>
       </div>
       <div class="content">
         <h4>All Items</h4>
-        <script src="/static/js/jquery.tablesorter.min.js"></script>
-        <script>
-          $(function() {
-            $("table#sortTableExample").tablesorter({ sortList: [[1,0]] });
-          });
-        </script>
-        <table class="common-table zebra-striped">
-	<tr><th>Key</th><th>Value</th><th></th></tr>
-	<tr><td>boo</td><td>boo2</td><td>boo3</td></tr>
-	<tr><td>boo</td><td>boo2</td><td>boo3</td></tr>
-        </table>
+        <form class="clearfix">
+          <table id="queryData" class="common-table zebra-striped">
+  	    <tr><th>Key</th><th>Value</th><th></th></tr>
+          </table>
+        </form>
 	<div>
 	<img src="/static/img/appengine-silver-120x30.gif" alt="Powered by Google App Engine" />
 	</div>

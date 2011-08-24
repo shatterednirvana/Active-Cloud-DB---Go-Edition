@@ -4,13 +4,17 @@ runtime: go
 api_version: 1
 
 handlers:
+- url: /static/css/bootstrap-1.1.0.min.css
+  static_files: static/css/bootstrap-1.1.0.min.css
+  upload: static/css/bootstrap-1.1.0.min.css
+
 - url: /static/img/appengine-silver-120x30.gif
   static_files: static/img/appengine-silver-120x30.gif
   upload: static/img/appengine-silver-120x30.gif
 
 - url: /static/js/jquery.js
-  static_files: static/js/jquery.js
-  upload: static/js/jquery.js
+  static_files: static/js/jquery.min.js
+  upload: static/js/jquery.min.js
 
 - url: /static/js/jquery.tablesorter.min.js
   static_files: static/js/jquery.tablesorter.min.js
