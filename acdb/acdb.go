@@ -38,10 +38,13 @@ const mainPage = `
       <div class="sidebar">
         <h4>Active Cloud DB</h4>
         <h4>Go Edition!</h4>
-        <form class="clearfix">
+        <form class="form-stacked">
           <legend>Add a new key/value:</legend>
+          <br />
           <label>Key:</label>
           <input class="medium" id="key" name="mInput" size="15" type="text" /> 
+          <br />
+          <br />
           <label>Value:</label>
           <input class="medium" id="val" name="mInput" size="15" type="text" /> 
           <br />

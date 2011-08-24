@@ -9,7 +9,8 @@ $(document).ready(function(){
     success: function(data) {
       jsonData = JSON.parse(data);
       for (var key in jsonData) {
-        $('#queryData').append(getRowHTML(key, jsonData[key]));
+        realKey = key.replace('/Entity,', '')
+        $('#queryData').append(getRowHTML(realKey, jsonData[key]));
       }
     }
   });
@@ -37,7 +38,7 @@ $(document).ready(function(){
 });
 
 function getRowHTML(key, val) {
-  var newRow = "<tr><td>" + key + "</td>";
+  var newRow = "<tr id='" + key + "'><td>" + key + "</td>";
   newRow += "<td>" + val + "</td>";
   newRow += "<td><a href='#' onclick=deleteKey('" + key;
   newRow += "') class='btn danger'>Delete</a></td></tr>";
@@ -53,6 +54,7 @@ function deleteKey(key) {
     url: '/delete?key=' + key,
     success: function(data) {
       console.log(data);
+      $('#' + key).remove();
     }
   });
 }
