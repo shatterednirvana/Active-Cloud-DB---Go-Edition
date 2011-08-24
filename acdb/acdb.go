@@ -55,6 +55,8 @@ const mainPage = `
         </form>
       </div>
       <div class="content">
+        <div id="success-flash-div" class="alert-message success"><p id="success-flash" /></div>
+        <div id="error-flash-div" class="alert-message error"><p id="error-flash" /></div>
         <h4>All Items</h4>
         <form class="clearfix">
           <table id="queryData" class="common-table zebra-striped">
