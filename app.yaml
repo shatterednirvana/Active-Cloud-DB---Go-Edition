@@ -1,7 +1,7 @@
 application: active-cloud-db-go
 version: 1
 runtime: go
-api_version: 1
+api_version: 2
 
 handlers:
 - url: /static/css/bootstrap-1.1.0.min.css

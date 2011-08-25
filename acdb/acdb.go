@@ -3,9 +3,12 @@ package hello
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/memcache"
+
 	"fmt"
 	"http"
 	"json"
+	"strconv"
 )
 
 type Entity struct {
@@ -82,16 +85,30 @@ func get(w http.ResponseWriter, r *http.Request) {
 
 	c := appengine.NewContext(r)
 
-	key := datastore.NewKey("Entity", keyName, 0, nil)
-	entity := new(Entity)
-
 	result := map[string] string {
 		keyName:"",
 		"error":"",
 	}
 
+	if item, err := memcache.Get(c, keyName); err == nil {
+		result[keyName] = fmt.Sprintf("%q", item.Value)
+		fmt.Fprintf(w, "%s", mapToJson(result))
+		return
+	}
+
+	key := datastore.NewKey("Entity", keyName, 0, nil)
+	entity := new(Entity)
+
 	if err := datastore.Get(c, key, entity); err == nil {
 		result[keyName] = entity.Value
+
+		// Set the value to speed up future reads - errors here aren't
+		// that bad, so don't worry about them
+		item := &memcache.Item{
+			Key: keyName,
+			Value: []byte(entity.Value),
+		}
+		memcache.Set(c, item)
 	} else {
 		result["error"] = fmt.Sprintf("%s", err)
 	}
@@ -115,6 +132,15 @@ func put(w http.ResponseWriter, r *http.Request) {
 	if _, err := datastore.Put(c, key, entity); err != nil {
 		result["error"] = fmt.Sprintf("%s", err)
 	}
+
+	// Set the value to speed up future reads - errors here aren't
+	// that bad, so don't worry about them
+	item := &memcache.Item{
+		Key: keyName,
+		Value: []byte(value),
+	}
+	memcache.Set(c, item)
+	bumpGeneration(c)
 
 	fmt.Fprintf(w, "%s", mapToJson(result))
 }
@@ -153,6 +179,11 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		result["error"] = fmt.Sprintf("%s", err)
 	}
 
+	if err := memcache.Delete(c, keyName); err != nil {
+		result["error"] += fmt.Sprintf("%s", err)
+	}
+	bumpGeneration(c)
+
 	fmt.Fprintf(w, "%s", mapToJson(result))
 }
 
@@ -163,4 +194,21 @@ func mapToJson(mapToConvert map[string] string) []byte {
         }
 
 	return jsonResult
+}
+
+const generationKey = "GENERATION_NUMBER"
+
+func bumpGeneration(c appengine.Context) {
+	if item, err := memcache.Get(c, generationKey); err == memcache.ErrCacheMiss {
+		newItem := &memcache.Item{
+			Key: generationKey,
+			Value: []byte("0"),
+		}
+		memcache.Set(c, newItem)
+        } else {
+		oldValue, _ := strconv.Atoi(fmt.Sprintf("%d", item.Value))
+		newValue := int(oldValue) + 1
+		item.Value = []byte(string(newValue))
+		memcache.CompareAndSwap(c, item)
+	}
 }
