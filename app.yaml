@@ -8,6 +8,10 @@ handlers:
   static_files: static/css/bootstrap-1.1.0.min.css
   upload: static/css/bootstrap-1.1.0.min.css
 
+- url: /static/img/Golang.png
+  static_files: static/img/Golang.png
+  upload: static/img/Golang.png
+
 - url: /static/img/appengine-silver-120x30.gif
   static_files: static/img/appengine-silver-120x30.gif
   upload: static/img/appengine-silver-120x30.gif

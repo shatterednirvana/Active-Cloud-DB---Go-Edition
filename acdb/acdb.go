@@ -64,7 +64,12 @@ const mainPage = `
           </table>
         </form>
 	<div>
-	<img src="/static/img/appengine-silver-120x30.gif" alt="Powered by Google App Engine" />
+	<a href="http://code.google.com/appengine/">
+          <img src="/static/img/appengine-silver-120x30.gif" alt="Powered by Google App Engine" />
+        </a>
+	<a href="http://golang.org">
+          <img src="/static/img/Golang.png" alt="Powered by Go" />
+        </a>
 	</div>
       </div>
     </div>
