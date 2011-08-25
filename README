@@ -7,7 +7,9 @@ Google App Engine and its scalable platform or AppScale and the plethora
 of different databases it supports.
 
 A Python version of this already exists, so this project is really more of an
-experiment to learn Go better and get some experience with Bootstrap. Enjoy!
+experiment to learn Go better and get some experience with Bootstrap. Speaking
+of which, there's a live demo of this application hosted on App Engine at
+http://active-cloud-db-go.appspot.com - so go check it out!
 
 Go - http://golang.org
 Bootstrap - http://twitter.github.com/bootstrap/
