@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"http"
 	"json"
-	"strconv"
 )
 
 type Entity struct {
@@ -147,8 +146,14 @@ func put(w http.ResponseWriter, r *http.Request) {
 
 func query(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	q := datastore.NewQuery("Entity")
 
+	cacheKey := getCacheKey(c)
+	if item, err := memcache.Get(c, cacheKey); err != memcache.ErrCacheMiss {
+		fmt.Fprintf(w, "%s", item.Value)
+		return
+	}
+
+	q := datastore.NewQuery("Entity")
 	result := map[string] string {}
 	for t := q.Run(c); ; {
 		var entity Entity
@@ -163,7 +168,14 @@ func query(w http.ResponseWriter, r *http.Request) {
 		result[keyString] = entity.Value
 	}
 
-	fmt.Fprintf(w, "%s", mapToJson(result))
+	jsonResult := mapToJson(result)
+	item := &memcache.Item{
+		Key: cacheKey,
+		Value: jsonResult,
+	}
+	memcache.Set(c, item)
+
+	fmt.Fprintf(w, "%s", jsonResult)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) {
@@ -197,18 +209,33 @@ func mapToJson(mapToConvert map[string] string) []byte {
 }
 
 const generationKey = "GENERATION_NUMBER"
+const queryKey = "QUERY_KEY/"
 
 func bumpGeneration(c appengine.Context) {
 	if item, err := memcache.Get(c, generationKey); err == memcache.ErrCacheMiss {
+		initialValue, _ := json.Marshal(0)
 		newItem := &memcache.Item{
 			Key: generationKey,
-			Value: []byte("0"),
+			Value: []byte(initialValue),
 		}
 		memcache.Set(c, newItem)
         } else {
-		oldValue, _ := strconv.Atoi(fmt.Sprintf("%d", item.Value))
-		newValue := int(oldValue) + 1
-		item.Value = []byte(string(newValue))
+		var oldValue int
+		json.Unmarshal(item.Value, &oldValue)
+		newValue := oldValue + 1
+		item.Value, _ = json.Marshal(newValue)
 		memcache.CompareAndSwap(c, item)
 	}
 }
+
+func getCacheKey(c appengine.Context) string {
+	generationNumber := 0;
+	if item, err := memcache.Get(c, generationKey); err == memcache.ErrCacheMiss {
+		bumpGeneration(c)
+	} else {
+		json.Unmarshal(item.Value, &generationNumber)
+	}
+
+	return queryKey + string(generationNumber)
+}
+
